@@ -51,8 +51,8 @@ const simpan = async (nama, email, telp) => {
   // });
 
   // Cek duplikasi
-  const duplicatedTelp = contacts.find(
-    (contact) => contact.telp.toLowerCase() === telp.toLowerCase()
+  const duplicatedNama = contacts.find(
+    (contact) => contact.nama.toLowerCase() === nama.toLowerCase()
   );
 
   // logical error
@@ -75,10 +75,8 @@ const simpan = async (nama, email, telp) => {
     return false;
   }
 
-  if (duplicatedTelp) {
-    console.log(
-      chalk.redBright(`Nomor telepon ${telp}, sudah berada di dalam kontak`)
-    );
+  if (duplicatedNama) {
+    console.log(chalk.yellowBright(`${nama} sudah di dalam kontak`));
     return false;
   }
 
@@ -101,9 +99,16 @@ const tampil = async () => {
   });
 };
 
+// Membuat function untuk menampilkan detail informasi mengenai kontak yang dicari
+const detail = async (nama) => {
+  const contacts = await daftarKontak();
+  const contact = contacts.find((contact) => contact.nama === nama);
+  return contact;
+};
+
 // Meng-export module / function
 module.exports = {
   simpan,
   tampil,
-  daftarKontak,
+  detail,
 };
