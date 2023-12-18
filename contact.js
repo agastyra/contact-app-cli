@@ -1,13 +1,7 @@
 // import core module File System
 const fs = require("fs");
-// import core module Readline
-const readline = require("readline");
-
-// Buat interface readline
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const chalk = require("chalk");
+const validator = require("validator");
 
 // Cek apakah folder ./data sudah ada atau belum
 const dirPath = "./data";
@@ -17,21 +11,13 @@ if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
 const filePath = "./data/contacts.json";
 if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]", "utf-8");
 
-// buat function pertanyaan yang menerima parameter berupa soal, dan mengembalikan Promise yang menjalankan rl.question()
-const pertanyaan = (soal) => {
-  return new Promise((resolve, reject) => {
-    rl.question(soal, (jawaban) => {
-      resolve(jawaban);
-    });
-  });
-};
-
 // membuat function simpan yang menerima parameter nama dan email
-const simpan = (nama, email) => {
-  // membuat object contact yang memiliki key nama, email
+const simpan = (nama, email, telp) => {
+  // membuat object contact yang memiliki key nama, email, dan telp
   const contact = {
     nama,
     email,
+    telp,
   };
 
   // menjalankan method readFile() dari core module File System
@@ -41,22 +27,58 @@ const simpan = (nama, email) => {
 
     // Mengambil isi file dan melakukan parsing ke dalam bentuk JSON
     data = JSON.parse(data);
+
+    // Cek duplikasi email -- logikal error
+    // const duplicatedEmail = data.find((contact) => {
+    //   if (contact.email) {
+    //     contact.email.toLowerCase() === email.toLowerCase();
+    //   }
+    // });
+
+    // Cek duplikasi
+    const duplicatedTelp = data.find(
+      (contact) => contact.telp.toLowerCase() === telp.toLowerCase()
+    );
+
+    // logical error
+    // if (duplicatedEmail) {
+    //   console.log(
+    //     chalk.redBright(`Alamat email ${email}, sudah berada di dalam kontak`)
+    //   );
+    //   return false;
+    // }
+
+    if (email) {
+      if (!validator.isEmail(email)) {
+        console.log(chalk.redBright(`Email ${email} tidak valid`));
+        return false;
+      }
+    }
+
+    if (!validator.isMobilePhone(telp, "id-ID")) {
+      console.log(chalk.redBright(`No telepon ${telp} tidak valid`));
+      return false;
+    }
+
+    if (duplicatedTelp) {
+      console.log(
+        chalk.redBright(`Nomor telepon ${telp}, sudah berada di dalam kontak`)
+      );
+      return false;
+    }
+
     // Menambahkan isi array pada JSON
     data.push(contact);
 
     // Menuliskan kembali isi file ke file contacts.json dengan menggunakan method writeFileSync(), dengan menggunakan data yang sudah di ubah menjadi JSON
     fs.writeFileSync("data/contacts.json", JSON.stringify(data), "utf-8");
 
-    // Mengembalikan nilai string
-    return "Terimakasih telah mengisi data";
+    // Menampilkan string ke layar
+    return console.log(chalk.greenBright("Terimakasih telah mengisi data"));
   });
-
-  // Menutup readline
-  rl.close();
 };
 
 // Meng-export module / function
 module.exports = {
-  pertanyaan,
   simpan,
 };
