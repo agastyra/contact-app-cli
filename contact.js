@@ -11,8 +11,29 @@ if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath);
 const filePath = "./data/contacts.json";
 if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, "[]", "utf-8");
 
-// membuat function simpan yang menerima parameter nama dan email
-const simpan = (nama, email, telp) => {
+// membuat function untuk mendapatkan semua kontak
+const daftarKontak = async () => {
+  try {
+    const contacts = await readfile(filePath, "utf-8");
+    console.log(chalk.dim("Memuat..."));
+    return JSON.parse(contacts);
+  } catch (error) {
+    return console.log(chalk.red(error));
+  }
+};
+
+// refactoring method readFile dari FileSystem
+const readfile = (path, option) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(path, option, (err, data) => {
+      if (err) reject("Terjadi kesalahan");
+      resolve(data);
+    });
+  });
+};
+
+// membuat function simpan yang menerima parameter nama email dan no telepon
+const simpan = async (nama, email, telp) => {
   // membuat object contact yang memiliki key nama, email, dan telp
   const contact = {
     nama,
@@ -20,61 +41,57 @@ const simpan = (nama, email, telp) => {
     telp,
   };
 
-  // menjalankan method readFile() dari core module File System
-  fs.readFile("data/contacts.json", "utf-8", (err, data) => {
-    // Cek jika terdapat error pada saat menjalankan fungsi readFile()
-    if (err) console.error(err);
+  const contacts = await daftarKontak();
 
-    // Mengambil isi file dan melakukan parsing ke dalam bentuk JSON
-    data = JSON.parse(data);
+  // Cek duplikasi email -- logikal error
+  // const duplicatedEmail = data.find((contact) => {
+  //   if (contact.email) {
+  //     contact.email.toLowerCase() === email.toLowerCase();
+  //   }
+  // });
 
-    // Cek duplikasi email -- logikal error
-    // const duplicatedEmail = data.find((contact) => {
-    //   if (contact.email) {
-    //     contact.email.toLowerCase() === email.toLowerCase();
-    //   }
-    // });
+  // Cek duplikasi
+  const duplicatedTelp = contacts.find(
+    (contact) => contact.telp.toLowerCase() === telp.toLowerCase()
+  );
 
-    // Cek duplikasi
-    const duplicatedTelp = data.find(
-      (contact) => contact.telp.toLowerCase() === telp.toLowerCase()
+  // logical error
+  // if (duplicatedEmail) {
+  //   console.log(
+  //     chalk.redBright(`Alamat email ${email}, sudah berada di dalam kontak`)
+  //   );
+  //   return false;
+  // }
+
+  if (email) {
+    if (!validator.isEmail(email)) {
+      console.log(chalk.redBright(`Email ${email} tidak valid`));
+      return false;
+    }
+  }
+
+  if (!validator.isMobilePhone(telp, "id-ID")) {
+    console.log(chalk.redBright(`No telepon ${telp} tidak valid`));
+    return false;
+  }
+
+  if (duplicatedTelp) {
+    console.log(
+      chalk.redBright(`Nomor telepon ${telp}, sudah berada di dalam kontak`)
     );
+    return false;
+  }
 
-    // logical error
-    // if (duplicatedEmail) {
-    //   console.log(
-    //     chalk.redBright(`Alamat email ${email}, sudah berada di dalam kontak`)
-    //   );
-    //   return false;
-    // }
+  // Menambahkan isi array pada JSON
+  contacts.push(contact);
 
-    if (email) {
-      if (!validator.isEmail(email)) {
-        console.log(chalk.redBright(`Email ${email} tidak valid`));
-        return false;
-      }
-    }
+  // Menuliskan kembali isi file ke file contacts.json dengan menggunakan method writeFileSync(), dengan menggunakan data yang sudah di ubah menjadi JSON
+  fs.writeFileSync(filePath, JSON.stringify(contacts), "utf-8");
 
-    if (!validator.isMobilePhone(telp, "id-ID")) {
-      console.log(chalk.redBright(`No telepon ${telp} tidak valid`));
-      return false;
-    }
+  // Menampilkan string ke layar
+  return console.log(chalk.greenBright("Terimakasih telah mengisi data"));
+};
 
-    if (duplicatedTelp) {
-      console.log(
-        chalk.redBright(`Nomor telepon ${telp}, sudah berada di dalam kontak`)
-      );
-      return false;
-    }
-
-    // Menambahkan isi array pada JSON
-    data.push(contact);
-
-    // Menuliskan kembali isi file ke file contacts.json dengan menggunakan method writeFileSync(), dengan menggunakan data yang sudah di ubah menjadi JSON
-    fs.writeFileSync("data/contacts.json", JSON.stringify(data), "utf-8");
-
-    // Menampilkan string ke layar
-    return console.log(chalk.greenBright("Terimakasih telah mengisi data"));
 // membuat function untuk menampilkan daftar kontak
 const tampil = async () => {
   const contacts = await daftarKontak();
@@ -88,4 +105,5 @@ const tampil = async () => {
 module.exports = {
   simpan,
   tampil,
+  daftarKontak,
 };
