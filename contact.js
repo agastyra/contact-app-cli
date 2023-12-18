@@ -75,10 +75,17 @@ const simpan = (nama, email, telp) => {
 
     // Menampilkan string ke layar
     return console.log(chalk.greenBright("Terimakasih telah mengisi data"));
+// membuat function untuk menampilkan daftar kontak
+const tampil = async () => {
+  const contacts = await daftarKontak();
+
+  contacts.forEach((contact, i) => {
+    return console.log(`${i + 1}. ${contact.nama} - ${contact.telp}`);
   });
 };
 
 // Meng-export module / function
 module.exports = {
   simpan,
+  tampil,
 };
