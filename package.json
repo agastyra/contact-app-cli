@@ -1,5 +1,5 @@
 {
-  "name": "contact-app",
+  "name": "contact-app-cli",
   "version": "1.0.0",
   "description": "Aplikasi kontak sederhana",
   "main": "app.js",
