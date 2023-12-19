@@ -1,6 +1,6 @@
 const yargs = require("yargs");
 const chalk = require("chalk");
-const { simpan, tampil, detail } = require("./contact");
+const { simpan, tampil, detail, edit } = require("./contact");
 
 // Membuat perintah pada terminal untuk menambahkan kontak
 yargs
@@ -54,16 +54,25 @@ yargs.command({
       describe: "Nama kontak yang dicari",
     },
   },
-  async handler({ nama }) {
-    const contact = await detail(nama);
-    const name = contact.nama;
-    const email = contact.email ? contact.email : "-";
-    const telp = contact.telp;
+  handler({ nama }) {
+    detail(nama);
+  },
+});
 
-    const text = chalk`Nama: {greenBright.bold ${name}}\nEmail: {greenBright.bold ${email}}\nNo. Telpon: {greenBright.bold ${telp}}
-    `;
-
-    console.log(text);
+// Membuat perintah pada terminal untuk menampilkan merubah kontak seseorang
+yargs.command({
+  command: "edit",
+  describe: "Mengubah informasi kontak seseorang",
+  builder: {
+    nama: {
+      alias: "n",
+      type: "string",
+      demandOption: true,
+      describe: "Nama kontak yang dicari",
+    },
+  },
+  handler({ nama }) {
+    edit(nama);
   },
 });
 
