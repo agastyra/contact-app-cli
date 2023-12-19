@@ -1,7 +1,7 @@
 {
   "name": "contact-app-cli",
   "version": "1.0.0",
-  "description": "Aplikasi kontak sederhana",
+  "description": "A simple contact application based on CLI",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
